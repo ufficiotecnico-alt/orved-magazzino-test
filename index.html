@@ -113,18 +113,93 @@ function showStatus(message, kind='info') {
 }
 function hideStatus(){ el('status').className='status'; }
 function normalize(item) {
+  function normalize(item) {
   return {
     id: item.ID_Ricambio || item.id || '',
-    code: item.Codice_Ricambio || item.codice || item.code || '',
-    brand: item.Marca || item.marca || item.brand || '',
-    description: item.Descrizione || item.descrizione || item.description || '',
-    unit: item.Unita_Misura || item.unita_misura || item.unit || 'pezzi',
-    minTotal: num(item.Minimo_Totale ?? item.minimo_totale ?? item.minTotal),
-    minVan: num(item.Minimo_Furgone ?? item.minimo_furgone ?? item.minVan),
-    total: num(item.Giacenza_Totale ?? item.giacenza_totale ?? item.total),
-    van: num(item.Giacenza_Furgone ?? item.giacenza_furgone ?? item.van),
-    locations: (Array.isArray(item.Ubicazioni) ? item.Ubicazioni : (Array.isArray(item.ubicazioni) ? item.ubicazioni : (Array.isArray(item.locations) ? item.locations : []))).map(l => ({ id: l.ID_Ubicazione || l.ubicazione || l.id || '', qty: num(l.Quantita ?? l.quantita ?? l.qty ?? 0) })),
-    active: String(item.Attivo ?? item.attivo ?? item.active ?? 'SI').toUpperCase() !== 'NO'
+
+    code:
+      item.Codice_Ricambio ||
+      item.codice ||
+      item.code ||
+      '',
+
+    brand:
+      item.Marca ||
+      item.marca ||
+      item.brand ||
+      '',
+
+    description:
+      item.Descrizione ||
+      item.descrizione ||
+      item.description ||
+      '',
+
+    unit:
+      item.Unita_Misura ||
+      item.unita_misura ||
+      item.unita ||
+      item.unit ||
+      'pezzi',
+
+    minTotal: num(
+      item.Minimo_Totale ??
+      item.minimo_totale ??
+      item.scortaMinimaTotale ??
+      item.minTotal
+    ),
+
+    minVan: num(
+      item.Minimo_Furgone ??
+      item.minimo_furgone ??
+      item.scortaMinimaFurgone ??
+      item.minVan
+    ),
+
+    total: num(
+      item.Giacenza_Totale ??
+      item.giacenza_totale ??
+      item.giacenzaTotale ??
+      item.total
+    ),
+
+    van: num(
+      item.Giacenza_Furgone ??
+      item.giacenza_furgone ??
+      item.giacenzaFurgone ??
+      item.van
+    ),
+
+    locations: (
+      Array.isArray(item.Ubicazioni)
+        ? item.Ubicazioni
+        : Array.isArray(item.ubicazioni)
+          ? item.ubicazioni
+          : Array.isArray(item.locations)
+            ? item.locations
+            : []
+    ).map(l => ({
+      id:
+        l.ID_Ubicazione ||
+        l.ubicazione ||
+        l.id ||
+        '',
+
+      qty: num(
+        l.Quantita ??
+        l.quantita ??
+        l.qty ??
+        0
+      )
+    })),
+
+    active:
+      String(
+        item.Attivo ??
+        item.attivo ??
+        item.active ??
+        'SI'
+      ).toUpperCase() !== 'NO'
   };
 }
 function buildBrandFilter() {
