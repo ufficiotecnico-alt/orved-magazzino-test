@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
+<style>
+  :root { --blue:#165b8f; --blue-soft:#eaf3fa; --line:#d8e0e7; --text:#1f2933; --muted:#5b6770; --warn:#9a6700; --warn-bg:#fff4ce; --danger:#b42318; --danger-bg:#fdecea; --ok:#176b43; --ok-bg:#e8f5ed; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:12px; font-family:Arial,sans-serif; color:var(--text); background:#f6f8fa; }
+  .app { max-width:1100px; margin:0 auto; }
+  .head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+  h2 { margin:0 0 4px; font-size:20px; }
+  .subtitle { font-size:13px; color:var(--muted); }
+  .test-tag { font-size:11px; font-weight:bold; background:#fff0d9; color:#7b4c00; padding:6px 8px; border-radius:999px; white-space:nowrap; }
+  .searchbox { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:12px; }
+  label { display:block; font-size:12px; font-weight:bold; margin-bottom:5px; }
+  input, select, button { font:inherit; }
+  #query { width:100%; border:1px solid #aebbc6; border-radius:9px; padding:12px; font-size:16px; }
+  .filters { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  .filters > div { flex:1; min-width:150px; }
+  select { width:100%; border:1px solid #aebbc6; border-radius:8px; padding:9px; background:#fff; }
+  .summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
+  .metric { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; min-width:0; }
+  .metric .k { color:var(--muted); font-size:11px; }
+  .metric .v { font-size:21px; font-weight:bold; margin-top:4px; overflow-wrap:anywhere; }
+  .status { padding:9px 10px; border-radius:8px; margin-bottom:10px; font-size:13px; display:none; }
+  .status.show { display:block; }
+  .status.error { color:var(--danger); background:var(--danger-bg); }
+  .status.info { color:#344054; background:#eef2f6; }
+  .status.warn { color:var(--warn); background:var(--warn-bg); }
+  .list { display:flex; flex-direction:column; gap:8px; max-height:55vh; overflow:auto; padding-right:2px; }
+  .item { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; }
+  .item-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+  .part-name { font-weight:bold; font-size:15px; line-height:1.35; overflow-wrap:anywhere; }
+  .meta { color:var(--muted); font-size:12px; margin-top:4px; line-height:1.4; }
+  .badge { display:inline-block; padding:4px 7px; border-radius:999px; font-size:11px; font-weight:bold; white-space:nowrap; }
+  .badge.ok { color:var(--ok); background:var(--ok-bg); }
+  .badge.warn { color:var(--warn); background:var(--warn-bg); }
+  .badge.low { color:var(--danger); background:var(--danger-bg); }
+  .stocks { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-top:12px; }
+  .stock { border:1px solid #e3e8ed; border-radius:8px; padding:8px; min-width:0; }
+  .stock .label { color:var(--muted); font-size:11px; }
+  .stock .value { font-weight:bold; font-size:17px; margin-top:3px; overflow-wrap:anywhere; }
+  .locations { font-size:12px; color:var(--muted); margin-top:8px; }
+  .empty { background:#fff; border:1px dashed #bac5ce; border-radius:10px; padding:20px; color:var(--muted); text-align:center; font-size:13px; }
+  .foot { color:var(--muted); font-size:11px; margin-top:10px; line-height:1.4; }
+  @media (max-width:600px) {
+    body { padding:8px; }
+    h2 { font-size:18px; }
+    .summary { grid-template-columns:1fr; }
+    .metric { display:flex; justify-content:space-between; align-items:center; }
+    .metric .v { font-size:18px; margin-top:0; }
+    .stocks { grid-template-columns:1fr 1fr; }
+    .stocks .stock:first-child { grid-column:1 / -1; }
+    .head { align-items:center; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="head">
+    <div>
+      <h2>Magazzino ricambi</h2>
+      <div class="subtitle">Ricerca articoli e controllo delle giacenze per ubicazione</div>
+    </div>
+    <div class="test-tag">PROTOTIPO · DATI DI TEST</div>
+  </div>
+
+  <div class="searchbox">
+    <label for="query">Cerca per codice, marca o descrizione</label>
+    <input id="query" type="search" autocomplete="off" placeholder="Es. ORV-TEST-001, ORVED, guarnizione…">
+    <div class="filters">
+      <div>
+        <label for="brand">Marca</label>
+        <select id="brand"><option value="">Tutte le marche</option></select>
+      </div>
+      <div>
+        <label for="location">Ubicazione</label>
+        <select id="location">
+          <option value="">Tutte le ubicazioni</option>
+          <option value="MAG-01">MAG-01</option><option value="MAG-02">MAG-02</option>
+          <option value="MAG-03">MAG-03</option><option value="MAG-04">MAG-04</option>
+          <option value="FURG-01">FURG-01</option>
+        </select>
+      </div>
+      <div>
+        <label for="alerts">Visualizzazione</label>
+        <select id="alerts"><option value="all">Tutti gli articoli</option><option value="alerts">Solo sotto soglia</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary">
+    <div class="metric"><div class="k">Articoli visualizzati</div><div class="v" id="count">0</div></div>
+    <div class="metric"><div class="k">Articoli con alert</div><div class="v" id="alertCount">0</div></div>
+    <div class="metric"><div class="k">Ubicazione selezionata</div><div class="v" id="locationLabel">Tutte</div></div>
+  </div>
+
+  <div id="status" class="status info"></div>
+  <div id="list" class="list"><div class="empty">Caricamento articoli di prova…</div></div>
+  <div class="foot">Questa versione è solo per la consultazione. Non registra movimenti e non modifica le giacenze. Prima dell'uso operativo saranno necessari collaudi e protezioni lato server.</div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwE-qm3w2ruIPPSzxmDl1UcA4sA7GcXTnk452Zw3-tryWE8eFQC63MQ_JYcsQ9K4-WY9g/exec';
+const state = { items: [], loaded: false, error: false, timer: null, request: 0 };
+const el = id => document.getElementById(id);
+function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
+function showStatus(message, kind='info') {
+  const s=el('status'); s.textContent=message; s.className='status show '+kind;
+}
+function hideStatus(){ el('status').className='status'; }
+function normalize(item) {
+  return {
+    id: item.ID_Ricambio || item.id || '',
+    code: item.Codice_Ricambio || item.codice || item.code || '',
+    brand: item.Marca || item.marca || item.brand || '',
+    description: item.Descrizione || item.descrizione || item.description || '',
+    unit: item.Unita_Misura || item.unita_misura || item.unit || 'pezzi',
+    minTotal: num(item.Minimo_Totale ?? item.minimo_totale ?? item.minTotal),
+    minVan: num(item.Minimo_Furgone ?? item.minimo_furgone ?? item.minVan),
+    total: num(item.Giacenza_Totale ?? item.giacenza_totale ?? item.total),
+    van: num(item.Giacenza_Furgone ?? item.giacenza_furgone ?? item.van),
+    locations: (Array.isArray(item.Ubicazioni) ? item.Ubicazioni : (Array.isArray(item.ubicazioni) ? item.ubicazioni : (Array.isArray(item.locations) ? item.locations : []))).map(l => ({ id: l.ID_Ubicazione || l.ubicazione || l.id || '', qty: num(l.Quantita ?? l.quantita ?? l.qty ?? 0) })),
+    active: String(item.Attivo ?? item.attivo ?? item.active ?? 'SI').toUpperCase() !== 'NO'
+  };
+}
+function buildBrandFilter() {
+  const select=el('brand'), current=select.value;
+  const brands=[...new Set(state.items.map(x=>x.brand).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'it'));
+  select.innerHTML='<option value="">Tutte le marche</option>'+brands.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');
+  select.value=brands.includes(current)?current:'';
+}
+async function loadItems() {
+  const req=++state.request;
+  if (!API_URL || API_URL.includes('INSERIRE_URL')) {
+    state.items = demoData();
+    state.loaded=true; state.error=false;
+    showStatus('Modalità dimostrativa locale: i dati mostrati sono fittizi e non provengono da Google Sheets.','warn');
+    buildBrandFilter(); render();
+    return;
+  }
+  try {
+    const response=await fetch(API_URL+'?action=list');
+    if (!response.ok) throw new Error('HTTP '+response.status);
+    const data=await response.json();
+    if (req!==state.request) return;
+    if (!data.ok) throw new Error(data.error || 'Risposta API non valida');
+    state.items=(data.results || data.ricambi || []).map(normalize).filter(x=>x.active);
+    state.loaded=true; state.error=false; hideStatus(); buildBrandFilter(); render();
+  } catch(e) {
+    if (req!==state.request) return;
+    state.error=true;
+    state.items=demoData();
+    showStatus('API non raggiungibile: visualizzati dati fittizi di ripiego. '+e.message,'error');
+    buildBrandFilter(); render();
+  }
+}
+function demoData() {
+  return [
+    {id:'TEST-RIC-001',code:'ORV-TEST-001',brand:'ORVED',description:'GUARNIZIONE DI PROVA',unit:'pezzi',minTotal:10,minVan:2,total:24,van:4,locations:[{id:'MAG-01',qty:20},{id:'FURG-01',qty:4}]},
+    {id:'TEST-RIC-002',code:'MARCA-B-002',brand:'MARCA-B',description:'FILTRO DIMOSTRATIVO',unit:'pezzi',minTotal:5,minVan:1,total:9,van:1,locations:[{id:'MAG-02',qty:8},{id:'FURG-01',qty:1}]},
+    {id:'TEST-RIC-003',code:'MARCA-C-003',brand:'MARCA-C',description:'TUBO DIMOSTRATIVO',unit:'cm',minTotal:100,minVan:20,total:290,van:40,locations:[{id:'MAG-03',qty:250},{id:'FURG-01',qty:40}]},
+    {id:'TEST-RIC-004',code:'ORV-TEST-004',brand:'ORVED',description:'DETERGENTE DIMOSTRATIVO',unit:'litri',minTotal:8,minVan:2,total:11,van:1,locations:[{id:'MAG-04',qty:10},{id:'FURG-01',qty:1}]},
+    {id:'TEST-RIC-005',code:'MARCA-B-005',brand:'MARCA-B',description:'GRANULATO DIMOSTRATIVO',unit:'Kg',minTotal:12,minVan:3,total:10,van:4,locations:[{id:'MAG-02',qty:6},{id:'FURG-01',qty:4}]}
+  ].map(normalize);
+}
+function getFiltered() {
+  const q=el('query').value.trim().toLocaleLowerCase('it');
+  const brand=el('brand').value, loc=el('location').value, onlyAlerts=el('alerts').value==='alerts';
+  return state.items.filter(x=>{
+    const text=(x.code+' '+x.brand+' '+x.description).toLocaleLowerCase('it');
+    const matchQ=!q||text.includes(q), matchBrand=!brand||x.brand===brand;
+    const matchLoc=!loc||x.locations.some(l=>String(l.id||l.ID_Ubicazione||'')===loc);
+    const lowTotal=x.minTotal>0&&x.total<x.minTotal, lowVan=x.minVan>0&&x.van<x.minVan;
+    return matchQ&&matchBrand&&matchLoc&&(!onlyAlerts||lowTotal||lowVan);
+  });
+}
+function render() {
+  const filtered=getFiltered();
+  el('count').textContent=filtered.length;
+  el('alertCount').textContent=filtered.filter(x=>(x.minTotal>0&&x.total<x.minTotal)||(x.minVan>0&&x.van<x.minVan)).length;
+  el('locationLabel').textContent=el('location').value||'Tutte';
+  if (!filtered.length) { el('list').innerHTML='<div class="empty">Nessun ricambio corrisponde ai criteri di ricerca.</div>'; return; }
+  el('list').innerHTML=filtered.map(x=>{
+    const lowTotal=x.minTotal>0&&x.total<x.minTotal, lowVan=x.minVan>0&&x.van<x.minVan;
+    const badge=lowTotal||lowVan?`<span class="badge low">SOTTO SOGLIA${lowTotal&&lowVan?' · TOTALE E FURGONE':lowTotal?' · TOTALE':' · FURGONE'}</span>`:'<span class="badge ok">GIACENZA REGOLARE</span>';
+    const locs=x.locations.map(l=>`${esc(l.id||l.ID_Ubicazione||'')} : ${esc(l.qty??l.Quantita??0)} ${esc(x.unit)}`).join(' · ');
+    const displayedLocations=el('location').value?x.locations.filter(l=>String(l.id||l.ID_Ubicazione||'')===el('location').value):x.locations;
+    const locationText=displayedLocations.map(l=>`${esc(l.id||l.ID_Ubicazione||'')} : ${esc(l.qty??l.Quantita??0)} ${esc(x.unit)}`).join(' · ') || 'Nessuna quantità registrata nelle ubicazioni filtrate';
+    return `<article class="item">
+      <div class="item-top"><div><div class="part-name">${esc(x.description)}</div><div class="meta">Codice: ${esc(x.code)} · Marca: ${esc(x.brand)} · Unità: ${esc(x.unit)}</div></div>${badge}</div>
+      <div class="stocks">
+        <div class="stock"><div class="label">Giacenza totale</div><div class="value">${esc(x.total)} ${esc(x.unit)}</div><div class="meta">Minimo: ${esc(x.minTotal)}</div></div>
+        <div class="stock"><div class="label">Sul furgone</div><div class="value">${esc(x.van)} ${esc(x.unit)}</div><div class="meta">Minimo: ${esc(x.minVan)}</div></div>
+        <div class="stock"><div class="label">Ubicazioni centrali</div><div class="value">${esc(x.locations.filter(l=>String(l.id||l.ID_Ubicazione||'').startsWith('MAG-')).length)}</div><div class="meta">Contenitori con giacenza</div></div>
+      </div>
+      <div class="locations">${locationText}</div>
+    </article>`;
+  }).join('');
+}
+el('query').addEventListener('input',render);
+el('brand').addEventListener('change',render);
+el('location').addEventListener('change',render);
+el('alerts').addEventListener('change',render);
+loadItems();
+if (window.JFCustomWidget) {
+  JFCustomWidget.subscribe('ready', function(){ JFCustomWidget.sendData({value:JSON.stringify({widget:'magazzino_consultazione',version:1})}); });
+  JFCustomWidget.subscribe('submit', function(){ JFCustomWidget.sendSubmit({valid:true,value:JSON.stringify({widget:'magazzino_consultazione',version:1})}); });
+}
+</script>
+</body>
+</html>
